@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+    <script src="dropbox-datastores-1.0-latest.js"></script>
+    <script src="nacl_factory.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <form action="" method="post" class="basic-grey">
+    <h1>Secured Shared
+    <span>Select a Mozillian and a File.</span>
+    </h1>
+    <label>
+        <span>Mozillian Email :</span>
+        <input id="email" type="email" name="email" placeholder="Valid Email Address" />
+    </label>
+    <label>
+        <span>File to Share :</span>
+        <input type="file" id="file" name="file"></input>
+    </label>
+     <label>
+        <span>&nbsp;</span>
+        <input type="button" class="button" value="Send" onclick="send()"/>
+    </label>
+</form>
+
+    <script>
+
+var recipientPK = "b0085575e3bbe971132d5cf08676065c5222bedb193a3b6583e10db4ac302c20";
+var recipientSK = "3bd903fd756a36bf09fc719543bff67b1e67015cad211a24f405884c5d536066";
+var senderPK = "826455b754aafd84d08df80c4844f5a1027c7be2c0b791661d130a458a3fc155";
+var senderSK = "81a8e5710d44cb3624ced030d0e5e1fb60d055220bd22287655d077a2947d9af";
+
+
+function sendTextFile(file)
+{
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", file, false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+  var allText = rawFile.responseText;
+  var nacl = nacl_factory.instantiate();
+  var message = nacl.encode_utf8(allText);
+  var nonce = nacl.crypto_box_random_nonce();
+  var packet = nacl.crypto_box(message, nonce, nacl.from_hex(recipientPK), 
+                               nacl.from_hex(senderSK));
+  var encrypted = nacl.to_hex(packet);
+  share(file, encrypted);
+            }
+        }
+    }
+    rawFile.send(null);
+};
+
+function send() {
+  sendTextFile("data.txt");
+}
+
+
+
+      function share(filename, encrypted) {
+        var client = new Dropbox.Client({ key: '3do0rbe854mglzm' });
+
+        function doHelloWorld() {
+            client.writeFile(filename, encrypted, function (error) {
+                if (error) {
+                    alert('Error: ' + error);
+                } else {
+                    client.makeUrl(filename, { download: true }, function (error, link) {
+                          alert('Got back URL: ' + link.url);
+                    });
+                }
+            });
+        }
+
+        // Try to complete OAuth flow.
+        client.authenticate({ interactive: false }, function (error, client) {
+            if (error) {
+                alert('Error: ' + error);
+            }
+        });
+
+        if (client.isAuthenticated()) {
+            doHelloWorld();
+        }
+
+        document.getElementById('writeButton').onclick = function () {
+            client.authenticate(function (error, client) {
+                if (error) {
+                    alert('Error: ' + error);
+                } else {
+                    doHelloWorld();
+                }
+            });
+          }
+        };
+    </script>
+</body>
+</html>
+
+
