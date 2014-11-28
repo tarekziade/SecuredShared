@@ -17,6 +17,7 @@ function readFile(filePickerId, cb) {
 };
 
 
+/* This should ask mozillians.org for the public key - given an e-mail*/
 function getRecipientPK(email) {
   return recipientPK;
 }
@@ -41,33 +42,41 @@ function send(recipientId, filePickerId) {
   });
 }
 
+var client = new Dropbox.Client({ key: '3do0rbe854mglzm' });
+
+client.authenticate({ interactive: false }, function (error, client) {
+  if (error) {
+          alert('Error: ' + error);
+  }
+  else {
+   alert('connected');
+  }
+});
+
+
 
 function share(recipient, filename, encrypted) {
-  var client = new Dropbox.Client({ key: '3do0rbe854mglzm' });
-
-  function shareFile() {
+  if (client.isAuthenticated()) {
+  alert('sending the file to dropbox');
       client.writeFile(filename, encrypted, function (error) {
           if (error) {
               alert('Error: ' + error);
           } else {
+
+              alert('file sent');
               client.makeUrl(filename, { download: true }, function (error, link) {
                  if (error) alert('Error: ' + error);
                    alert('Got back URL: ' + link.url);
               });
           }
       });
+
   }
+else {
+  alert('not connected to dropbox');
 
-  // Try to complete OAuth flow.
-  client.authenticate({ interactive: false }, function (error, client) {
-      if (error) {
-          alert('Error: ' + error);
-      }
-  });
-
-  if (client.isAuthenticated()) {
-      shareFile();
-  } else {
-  alert("not auth");
-}
+  }
 };
+
+
+
