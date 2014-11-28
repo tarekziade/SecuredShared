@@ -4,8 +4,9 @@ SecuredShared
 Features
 
 - Publishes an encrypted file into Dropbox and share a public link.
-- Get back encrypted files and decrypt them in a sandboxed html5 local filesystem
+- Get back encrypted files and decrypt them in a sandboxed html5 local filesystem (indexdb)
 - notify the recipients by e-mail
+- page to handle: keys, decrypted files 
 
 
 todo:
