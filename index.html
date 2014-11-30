@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+    <script src="dropbox-datastores-1.0-latest.js"></script>
+    <script src="nacl_factory.js"></script>
+    <script src="sharing.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <form action="" method="post" class="basic-grey">
+    <h2>Personal Keys.
+    <span>Do not share the secret key.</span>
+    </h2>
+
+    <label>
+        <span>Public Key :</span>
+        <input id="pk" type="text" name="pk" readonly/>
+    </label>
+    <label>
+        <span>Secret Key :</span>
+        <input id="sk" type="text" name="sk" readonly/>
+      </label>
+     <label>
+        <span>&nbsp;</span>
+        <input type="button" class="button" value="(Re)generate the keypair"
+        onclick="storeKeys(); return false;"></input>
+
+        <input type="button" class="button" value="Share the public key"
+        onclick="alert('not implemented'); return false;"/>
+
+    </label>
+  </form>
+
+  <form action="" method="post" class="basic-grey">
+    <h2>Share a file.
+    <span>Select a Mozillian and a File.</span>
+    </h2>
+    <label>
+        <span>Mozillian Email :</span>
+        <input id="email" type="email" name="email" placeholder="Valid Email Address" />
+    </label>
+    <label>
+        <span>File to Share :</span>
+        <input type="file" id="file" name="file"></input>
+    </label>
+
+     <label>
+        <span>&nbsp;</span>
+        <input type="button" class="button" value="Send" 
+            onclick="send('email', 'file'); return false"/>
+    </label>
+  </form>
+
+   <script>initApp();</script>
+</body>
+</html>
+
+
+

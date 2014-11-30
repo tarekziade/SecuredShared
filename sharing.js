@@ -2,6 +2,9 @@ var recipientPK = "b0085575e3bbe971132d5cf08676065c5222bedb193a3b6583e10db4ac302
 var recipientSK = "3bd903fd756a36bf09fc719543bff67b1e67015cad211a24f405884c5d536066";
 var senderPK;
 var senderSK;
+var appName = "SecuredShared";
+var dbName = "SecuredShared";
+var db;
 
 
 function generateKeyPair() {
@@ -86,34 +89,33 @@ else {
 };
 
 
-var request = indexedDB.open("SecuredShared", 2);
-var db;
+function initApp() {
+  var request = indexedDB.open(appName, 2);
 
-request.onsuccess = function (event) {
-  db = request.result;
-  if (!db.objectStoreNames.contains("SecuredShared")) {
-    db.createObjectStore("SecuredShared");
-  }
-  loadKeys();
-};
+  request.onsuccess = function (event) {
+    db = request.result;
+    if (!db.objectStoreNames.contains(dbName)) {
+      db.createObjectStore(dbName);
+    }
+    loadKeys();
+  };
 
-
-request.onupgradeneeded = function (event) {
-  console.log("Creating objectStore")
-  db = event.target.result;
-  db.createObjectStore("SecuredShared");
-  if (!db.objectStoreNames.contains("SecuredShared")) {
-    db.createObjectStore("SecuredShared");
-  }
-  loadKeys();
+  request.onupgradeneeded = function (event) {
+    console.log("Creating objectStore")
+    db = event.target.result;
+    if (!db.objectStoreNames.contains(dbName)) {
+      db.createObjectStore(dbName);
+    }
+    loadKeys();
+  };
 };
 
 
 function storeKeys() {
   var keys = generateKeyPair();
-  var transaction = db.transaction(["SecuredShared"], "readwrite");
-  transaction.objectStore("SecuredShared").put(keys.pk, "pk");
-  transaction.objectStore("SecuredShared").put(keys.sk, "sk");
+  var transaction = db.transaction([dbName], "readwrite");
+  transaction.objectStore(dbName).put(keys.pk, "pk");
+  transaction.objectStore(dbName).put(keys.sk, "sk");
   loadKeys();
 };
 
@@ -129,8 +131,8 @@ function loadKeys() {
 
 
 function getKeys(cb) {
-  var transaction = db.transaction(["SecuredShared"], "readonly");
-  var store = transaction.objectStore("SecuredShared");
+  var transaction = db.transaction([dbName], "readonly");
+  var store = transaction.objectStore(dbName);
   store.get("pk").onsuccess = function (event) {
       var pk = event.target.result;
       store.get("sk").onsuccess = function (event) {
