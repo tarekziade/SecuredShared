@@ -75,7 +75,12 @@ function share(recipient, filename, encrypted) {
 
               client.makeUrl(filename, { download: true }, function (error, link) {
                  if (error) alert('Error: ' + error);
-                   alert('Got back URL: ' + link.url);
+                   // sending the URL to the server for notification
+                   var xhr = new XMLHttpRequest();
+                   xhr.open("GET", "/notify?recipient=" + recipient + 
+                        "&url=" + link.url, true);
+                   xhr.send();
+                   alert('The user has been notified');
               });
           }
       });
