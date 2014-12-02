@@ -5,6 +5,7 @@ var senderSK;
 var appName = "SecuredShared";
 var dbName = "SecuredShared";
 var db;
+var dbVersion = 2;
 
 
 function generateKeyPair() {
@@ -67,13 +68,11 @@ client.authenticate({ interactive: false }, function (error, client) {
 
 function share(recipient, filename, encrypted) {
   if (client.isAuthenticated()) {
-  alert('sending the file to dropbox');
       client.writeFile(filename, encrypted, function (error) {
           if (error) {
               alert('Error: ' + error);
           } else {
 
-              alert('file sent');
               client.makeUrl(filename, { download: true }, function (error, link) {
                  if (error) alert('Error: ' + error);
                    alert('Got back URL: ' + link.url);
@@ -90,23 +89,31 @@ else {
 
 
 function initApp() {
-  var request = indexedDB.open(appName, 2);
+  var request = indexedDB.open(appName, dbVersion);
 
   request.onsuccess = function (event) {
     db = request.result;
     if (!db.objectStoreNames.contains(dbName)) {
-      db.createObjectStore(dbName);
+      var objectStore = db.createObjectStore(dbName);
+      objectStore.transaction.oncomplete = function(event) {
+        loadKeys();
+      }
+    } else {
+      loadKeys();
     }
-    loadKeys();
   };
 
   request.onupgradeneeded = function (event) {
     console.log("Creating objectStore")
     db = event.target.result;
     if (!db.objectStoreNames.contains(dbName)) {
-      db.createObjectStore(dbName);
+      var objectStore = db.createObjectStore(dbName);
+      objectStore.transaction.oncomplete = function(event) {
+        loadKeys();
+      }
+    } else {
+      loadKeys();
     }
-    loadKeys();
   };
 };
 
@@ -122,15 +129,21 @@ function storeKeys() {
 
 function loadKeys() {
   getKeys(function (pk, sk){
-    senderPK = pk;
-    senderSK = sk;
-    document.getElementById("pk").value = pk;
-    document.getElementById("sk").value = sk;
+    if (!pk) {
+      storeKeys();
+    }
+    else {
+      senderPK = pk;
+      senderSK = sk;
+      document.getElementById("pk").value = pk;
+      document.getElementById("sk").value = sk;
+    }
   });
 };
 
 
 function getKeys(cb) {
+  console.log(db);
   var transaction = db.transaction([dbName], "readonly");
   var store = transaction.objectStore(dbName);
   store.get("pk").onsuccess = function (event) {
